@@ -30,7 +30,7 @@ spice.tkvrsn("TOOLKIT")
 #   https://naif.jpl.nasa.gov/pub/naif/CASSINI/kernels/spk/981005_PLTEPH-DE405S.bsp
 #
 #   The following is the contents of a metakernel that was saved with
-#   the name 'cassMetaK.txt'.
+#   the name 'cassiniMetaKernel.txt'.
 #   \begindata
 #   KERNELS_TO_LOAD=(
 #   '~/naif/cassini-position-example/cassini-metakernels/naif0009.tls',
@@ -56,3 +56,36 @@ utc = ['Jun 20, 2004', 'Dec 1, 2005']
 etOne = spice.str2et(utc[0])
 etTwo = spice.str2et(utc[1])
 print("ET One: {}, ET Two: {}".format(etOne, etTwo))
+
+# Get the times
+times = [x*(etTwo-etOne)/step + etOne for x in range(step)]
+
+# Check first few times:
+print(times[0:3])
+
+# Check the documentation on spkpos before continuing
+help(spice.spkpos)
+
+# Run spkpos as a vectorized function
+positions, lightTimes = spice.spkpos('Cassini', times, 'J2000', 'NONE', 'SATURN BARYCENTER')
+
+# Positions is a 3xN vector of XYZ positions
+print("Positions: ")
+print(positions[0])
+
+# Light Times is a N vector of time
+print("Light Times: ")
+print(lightTimes[0])
+
+# Clean up the kernels
+spice.kclear()
+
+
+# Use matplotlib 3D plotting to visualize Cassini's coordinates.
+# First convert the positions list to a 2D numpy array for easier indexing in the plot
+positions = positions.T # positions is shaped (4000, 3), let's transpose to (3, 4000) for easier indexing
+fig = plt.figure(figsize=(9, 9))
+ax = fig.add_subplot(111, projection='3d')
+ax.plot(positions[0], positions[1], positions[2])
+plt.title('SpiceyPy Cassini Position Example from June 20, 2004 to Dec 1, 2005 ')
+plt.show()
